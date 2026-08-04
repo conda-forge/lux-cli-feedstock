@@ -10,7 +10,7 @@ source:
   sha256: c2525598264d40b1b3fdb2b619cdc161fc361ce0ca2c84adfefd826a5a6c2f90
 
 build:
-  number: 1
+  number: 2
   script:
     env:
       CARGO_PROFILE_RELEASE_LTO: fat
@@ -25,39 +25,27 @@ build:
           - export OPENSSL_NO_VENDOR=1 # force linking to host's (conda-forge's) OpenSSL libs
           - cargo auditable install --path=. --root="$PREFIX" --no-track --locked --bins
           # generate shell completions and manpage
-          - mkdir -p "$PREFIX"/share/man/man1 "$PREFIX"/share/bash-completion/completions "$PREFIX"/share/fish/vendor_completions.d "$PREFIX"/share/zsh/site-functions
-          - if: build_platform != host_platform
-            then: unset CARGO_BUILD_TARGET
-          - cargo run --locked --package=xtask -- dist-completions
-          - cargo run --locked --package=xtask -- dist-man
-          - cp ../target/dist/lx.bash "$PREFIX"/share/bash-completion/completions/lx
-          - cp ../target/dist/lx.fish "$PREFIX"/share/fish/vendor_completions.d/lx.fish
-          - cp ../target/dist/_lx     "$PREFIX"/share/zsh/site-functions/_lx
-          - cp ../target/dist/lx.1    "$PREFIX"/share/man/man1/
-          - cp ../target/dist/lux*.1  "$PREFIX"/share/man/man1/
+          - if: build_platform == host_platform
+            then:
+              - mkdir -p "$PREFIX"/share/man/man1 "$PREFIX"/share/bash-completion/completions "$PREFIX"/share/fish/vendor_completions.d "$PREFIX"/share/zsh/site-functions
+              - '"$PREFIX"/bin/lx util man  --target-dir="$PREFIX"/share/man/man1'
+              - '"$PREFIX"/bin/lx util completion bash > "$PREFIX"/share/bash-completion/completions/lx'
+              - '"$PREFIX"/bin/lx util completion fish > "$PREFIX"/share/fish/vendor_completions.d/lx.fish'
+              - '"$PREFIX"/bin/lx util completion zsh  > "$PREFIX"/share/zsh/site-functions/_lx'
       - if: win
         then:
           - cargo auditable install --path=. --root="%LIBRARY_PREFIX%" --no-track --locked --bins --no-default-features --features=vendored
           # generate shell completions and manpage
-          - if not exist "%LIBRARY_PREFIX%"\share\man\man1 mkdir "%LIBRARY_PREFIX%"\share\man\man1
-          - if not exist "%LIBRARY_PREFIX%"\share\bash-completion\completions mkdir "%LIBRARY_PREFIX%"\share\bash-completion\completions
-          - if not exist "%LIBRARY_PREFIX%"\share\fish\vendor_completions.d mkdir "%LIBRARY_PREFIX%"\share\fish\vendor_completions.d
-          - if not exist "%LIBRARY_PREFIX%"\share\zsh\site-functions mkdir "%LIBRARY_PREFIX%"\share\zsh\site-functions
-          - if: build_platform != host_platform
+          - if: build_platform == host_platform
             then:
-              - set "CARGO_BUILD_TARGET="
-              - set "VSCMD_ARG_TGT_ARCH=x64"
-              - set "LIB=%LIB:ARM64=x64%"
-              - set "LIB=%LIB:arm64=x64%"
-              - set "PATH=%PATH:\ARM64=\x64%"
-              - set "PATH=%PATH:\arm64=\x64%"
-          - cargo run --locked --package=xtask -- dist-completions
-          - cargo run --locked --package=xtask -- dist-man
-          - copy ..\target\dist\lx.bash "%LIBRARY_PREFIX%"\share\bash-completion\completions\lx
-          - copy ..\target\dist\lx.fish "%LIBRARY_PREFIX%"\share\fish\vendor_completions.d\lx.fish
-          - copy ..\target\dist\_lx     "%LIBRARY_PREFIX%"\share\zsh\site-functions\_lx
-          - copy ..\target\dist\lx.1    "%LIBRARY_PREFIX%"\share\man\man1\
-          - copy ..\target\dist\lux*.1  "%LIBRARY_PREFIX%"\share\man\man1\
+              - if not exist "%LIBRARY_PREFIX%"\share\man\man1 mkdir "%LIBRARY_PREFIX%"\share\man\man1
+              - if not exist "%LIBRARY_PREFIX%"\share\bash-completion\completions mkdir "%LIBRARY_PREFIX%"\share\bash-completion\completions
+              - if not exist "%LIBRARY_PREFIX%"\share\fish\vendor_completions.d mkdir "%LIBRARY_PREFIX%"\share\fish\vendor_completions.d
+              - if not exist "%LIBRARY_PREFIX%"\share\zsh\site-functions mkdir "%LIBRARY_PREFIX%"\share\zsh\site-functions
+              - '"%LIBRARY_BIN%"\lx.exe util man  --target-dir="%LIBRARY_PREFIX%"\share\man\man1'
+              - '"%LIBRARY_BIN%"\lx.exe util completion bash > "%LIBRARY_PREFIX%\share\bash-completion\completions\lx"'
+              - '"%LIBRARY_BIN%"\lx.exe util completion fish > "%LIBRARY_PREFIX%\share\fish\vendor_completions.d\lx.fish"'
+              - '"%LIBRARY_BIN%"\lx.exe util completion zsh  > "%LIBRARY_PREFIX%\share\zsh\site-functions\_lx"'
       - cargo-bundle-licenses --format=yaml --output=../THIRDPARTY.yml
 
 requirements:
@@ -88,14 +76,14 @@ tests:
       bin:
         - lx
       files:
-        - if: unix
+        - if: unix and build_platform == host_platform
           then:
             - share/man/man1/lx.1
             - share/man/man1/lux*.1
             - share/bash-completion/completions/lx
             - share/fish/vendor_completions.d/lx.fish
             - share/zsh/site-functions/_lx
-        - if: win
+        - if: win and build_platform == host_platform
           then:
             - Library/share/man/man1/lx.1
             - Library/share/man/man1/lux*.1
