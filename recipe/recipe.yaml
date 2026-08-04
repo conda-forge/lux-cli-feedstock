@@ -26,6 +26,8 @@ build:
           - cargo auditable install --path=. --root="$PREFIX" --no-track --locked --bins
           # generate shell completions and manpage
           - mkdir -p "$PREFIX"/share/man/man1 "$PREFIX"/share/bash-completion/completions "$PREFIX"/share/fish/vendor_completions.d "$PREFIX"/share/zsh/site-functions
+          - if: build_platform != host_platform
+            then: unset CARGO_BUILD_TARGET
           - cargo run --locked --package=xtask -- dist-completions
           - cargo run --locked --package=xtask -- dist-man
           - cp ../target/dist/lx.bash "$PREFIX"/share/bash-completion/completions/lx
@@ -41,6 +43,14 @@ build:
           - if not exist "%LIBRARY_PREFIX%"\share\bash-completion\completions mkdir "%LIBRARY_PREFIX%"\share\bash-completion\completions
           - if not exist "%LIBRARY_PREFIX%"\share\fish\vendor_completions.d mkdir "%LIBRARY_PREFIX%"\share\fish\vendor_completions.d
           - if not exist "%LIBRARY_PREFIX%"\share\zsh\site-functions mkdir "%LIBRARY_PREFIX%"\share\zsh\site-functions
+          - if: build_platform != host_platform
+            then:
+              - set "CARGO_BUILD_TARGET="
+              - set "VSCMD_ARG_TGT_ARCH=x64"
+              - set "LIB=%LIB:ARM64=x64%"
+              - set "LIB=%LIB:arm64=x64%"
+              - set "PATH=%PATH:\ARM64=\x64%"
+              - set "PATH=%PATH:\arm64=\x64%"
           - cargo run --locked --package=xtask -- dist-completions
           - cargo run --locked --package=xtask -- dist-man
           - copy ..\target\dist\lx.bash "%LIBRARY_PREFIX%"\share\bash-completion\completions\lx
