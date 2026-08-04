@@ -10,7 +10,7 @@ source:
   sha256: 62f3c3bceca2ce3cc78ad6fb414c8373a22cd9d8477e7090d8f9ec8e6c8c45bb
 
 build:
-  number: 0
+  number: 1
   script:
     env:
       CARGO_PROFILE_RELEASE_LTO: fat
@@ -63,12 +63,12 @@ requirements:
     - perl
     - pkg-config
   host:
-  - if: unix
-    then:
-     - gpgme
-     - libgit2
-     - libgpg-error
-     - openssl
+    - if: unix
+      then:
+        - gpgme
+        - libgit2
+        - libgpg-error
+        - openssl
 
 tests:
   - script:
