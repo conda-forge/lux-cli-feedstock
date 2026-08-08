@@ -1,5 +1,5 @@
 context:
-  version: "0.40.1"
+  version: "0.40.2"
 
 package:
   name: lux-cli
@@ -7,10 +7,10 @@ package:
 
 source:
   url: https://github.com/lumen-oss/lux/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: c2525598264d40b1b3fdb2b619cdc161fc361ce0ca2c84adfefd826a5a6c2f90
+  sha256: 0a420b1f1dbd0b0642c4d7ed8025edbeb7b0372b45fbcb6fcae0be37b4815b70
 
 build:
-  number: 2
+  number: 0
   script:
     env:
       CARGO_PROFILE_RELEASE_LTO: fat
