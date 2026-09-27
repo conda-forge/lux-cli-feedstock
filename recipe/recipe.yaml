@@ -15,38 +15,26 @@ build:
     env:
       CARGO_PROFILE_RELEASE_LTO: fat
       CARGO_PROFILE_RELEASE_STRIP: symbols
+      OPENSSL_NO_VENDOR: ${{ "1" if unix else "" }} # force linking to host's (conda-forge's) OpenSSL libs on Unix
+    interpreter: nu
     content:
-      - cd lux-cli
+      - let prefix = $env.LIBRARY_PREFIX? | default $env.PREFIX
+      # instruct Apple's `ld64` linker to drop unused OpenSSL symbols and to add correct `@rpath` for xtask
       - if: osx
-        # instruct Apple's `ld64` linker to drop unused OpenSSL symbols and to add correct `@rpath` for xtask
-        then: export RUSTFLAGS="${RUSTFLAGS} -C link-arg=-Wl,-dead_strip_dylibs -C link-arg=-Wl,-rpath,${PREFIX}/lib"
-      - if: unix
-        then:
-          - export OPENSSL_NO_VENDOR=1 # force linking to host's (conda-forge's) OpenSSL libs
-          - cargo auditable install --path=. --root="$PREFIX" --no-track --locked --bins
-          # generate shell completions and manpage
-          - if: build_platform == host_platform
-            then:
-              - mkdir -p "$PREFIX"/share/man/man1 "$PREFIX"/share/bash-completion/completions "$PREFIX"/share/fish/vendor_completions.d "$PREFIX"/share/zsh/site-functions
-              - '"$PREFIX"/bin/lx util man  --target-dir="$PREFIX"/share/man/man1'
-              - '"$PREFIX"/bin/lx util completion bash > "$PREFIX"/share/bash-completion/completions/lx'
-              - '"$PREFIX"/bin/lx util completion fish > "$PREFIX"/share/fish/vendor_completions.d/lx.fish'
-              - '"$PREFIX"/bin/lx util completion zsh  > "$PREFIX"/share/zsh/site-functions/_lx'
+        then: $env.RUSTFLAGS = $'($env.RUSTFLAGS?) -C link-arg=-Wl,-dead_strip_dylibs -C link-arg=-Wl,-rpath,($prefix)/lib' | str trim
+      # build main app and generate license data
+      - cd lux-cli
       - if: win
+        then: ^cargo auditable install --path=. --root=($prefix) --no-track --locked --bins --no-default-features --features=vendored
+        else: ^cargo auditable install --path=. --root=($prefix) --no-track --locked --bins
+      - ^cargo-bundle-licenses --format=yaml --output=../THIRDPARTY.yml
+      # generate shell completions and manpage
+      - if: build_platform == host_platform
         then:
-          - cargo auditable install --path=. --root="%LIBRARY_PREFIX%" --no-track --locked --bins --no-default-features --features=vendored
-          # generate shell completions and manpage
-          - if: build_platform == host_platform
-            then:
-              - if not exist "%LIBRARY_PREFIX%"\share\man\man1 mkdir "%LIBRARY_PREFIX%"\share\man\man1
-              - if not exist "%LIBRARY_PREFIX%"\share\bash-completion\completions mkdir "%LIBRARY_PREFIX%"\share\bash-completion\completions
-              - if not exist "%LIBRARY_PREFIX%"\share\fish\vendor_completions.d mkdir "%LIBRARY_PREFIX%"\share\fish\vendor_completions.d
-              - if not exist "%LIBRARY_PREFIX%"\share\zsh\site-functions mkdir "%LIBRARY_PREFIX%"\share\zsh\site-functions
-              - '"%LIBRARY_BIN%"\lx.exe util man  --target-dir="%LIBRARY_PREFIX%"\share\man\man1'
-              - '"%LIBRARY_BIN%"\lx.exe util completion bash > "%LIBRARY_PREFIX%\share\bash-completion\completions\lx"'
-              - '"%LIBRARY_BIN%"\lx.exe util completion fish > "%LIBRARY_PREFIX%\share\fish\vendor_completions.d\lx.fish"'
-              - '"%LIBRARY_BIN%"\lx.exe util completion zsh  > "%LIBRARY_PREFIX%\share\zsh\site-functions\_lx"'
-      - cargo-bundle-licenses --format=yaml --output=../THIRDPARTY.yml
+          - ^lx util completion bash | save --force ($prefix)/share/bash-completion/completions/lx
+          - ^lx util completion fish | save --force ($prefix)/share/fish/vendor_completions.d/lx.fish
+          - ^lx util completion zsh  | save --force ($prefix)/share/zsh/site-functions/_lx
+          - ^lx util man       --target-dir=($prefix)/share/man/man1
 
 requirements:
   build:
@@ -58,6 +46,7 @@ requirements:
     - cargo-bundle-licenses
     - cmake
     - make
+    - nushell
     - perl
     - pkg-config
   host:
