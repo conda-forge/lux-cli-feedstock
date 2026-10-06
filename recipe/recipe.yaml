@@ -1,5 +1,5 @@
 context:
-  version: "0.46.0"
+  version: "0.47.0"
 
 package:
   name: lux-cli
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/lumen-oss/lux/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: 5273d09ad50a810cdae1fd883afd3e9b055c0a21c77c318c29c86e3cd7701399
+  sha256: 3e95e7468aee0aa3711b79686066f338eaa948490ec806e305949a6e6f34ca31
 
 build:
   number: 0
