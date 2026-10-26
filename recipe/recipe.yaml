@@ -34,7 +34,7 @@ build:
           - ^lx util completion bash | save --force ($prefix)/share/bash-completion/completions/lx
           - ^lx util completion fish | save --force ($prefix)/share/fish/vendor_completions.d/lx.fish
           - ^lx util completion zsh  | save --force ($prefix)/share/zsh/site-functions/_lx
-          - ^lx util man       --target-dir=($prefix)/share/man/man1
+          - ^lx util man               --target-dir=($prefix)/share/man/man1
 
 requirements:
   build:
