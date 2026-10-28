@@ -13,6 +13,7 @@ build:
   number: 0
   script:
     env:
+      AWS_LC_SYS_CMAKE_BUILDER: ${{ "1" if win else "" }} # force CMake builder for `aws-lc-sys` native C/C++ code on Windows
       CARGO_PROFILE_RELEASE_LTO: fat
       CARGO_PROFILE_RELEASE_STRIP: symbols
       OPENSSL_NO_VENDOR: ${{ "1" if unix else "" }} # force linking to host's (conda-forge's) OpenSSL libs on Unix
