@@ -49,6 +49,8 @@ requirements:
     - nushell
     - perl
     - pkg-config
+    - if: win
+      then: nasm
   host:
     - if: unix
       then:
