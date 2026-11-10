@@ -10,7 +10,7 @@ source:
   sha256: 40848959ef8322c0092b08c16687016103127612ee50920e94d60b279e066783
 
 build:
-  number: 0
+  number: 1
   script:
     env:
       AWS_LC_SYS_CMAKE_BUILDER: ${{ "1" if win else "" }} # force CMake builder for `aws-lc-sys` native C/C++ code on Windows
