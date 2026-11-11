@@ -1,5 +1,5 @@
 context:
-  version: "0.54.0"
+  version: "0.55.0"
 
 package:
   name: lux-cli
@@ -7,10 +7,10 @@ package:
 
 source:
   url: https://github.com/lumen-oss/lux/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: 40848959ef8322c0092b08c16687016103127612ee50920e94d60b279e066783
+  sha256: d864ddb7d805dff4ebda8371a3796be4b4f45233ba2273d2b7e9d5443987739d
 
 build:
-  number: 1
+  number: 0
   script:
     env:
       AWS_LC_SYS_CMAKE_BUILDER: ${{ "1" if win else "" }} # force CMake builder for `aws-lc-sys` native C/C++ code on Windows
