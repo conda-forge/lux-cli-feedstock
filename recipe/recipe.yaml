@@ -49,7 +49,7 @@ requirements:
     - make
     - nushell
     - perl
-    - pkg-config
+    - pkgconf
     - if: win
       then: nasm
   host:
